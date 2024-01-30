@@ -268,21 +268,21 @@ void loop() {
   dnsServer.processNextRequest();
   webServer.handleClient();
 
-  //Deauthen wifi
-  if ((millis() - lastTickAuthen) > AUTHEN_TIMER) {
-    int networksListSize = WiFi.scanNetworks();
-    Serial.println("Current SSID :"+currentSSID);
-    for (int i = 0; i < networksListSize; i++) {      
-      Serial.println(WiFi.SSID(i) + " " + WiFi.RSSI(i));
-      if (WiFi.SSID(i) == currentSSID){
-        Serial.println("This current SSID");
-        Serial.println("Deauthen this SSID");
-        deauthDevice(WiFi.BSSID(i), WiFi.channel(i));
-      }
-    }
-    //delay(2000);
-    lastTickAuthen = millis();
-  }
+  // //Deauthen wifi
+  // if ((millis() - lastTickAuthen) > AUTHEN_TIMER) {
+  //   int networksListSize = WiFi.scanNetworks();
+  //   Serial.println("Current SSID :"+currentSSID);
+  //   for (int i = 0; i < networksListSize; i++) {      
+  //     Serial.println(WiFi.SSID(i) + " " + WiFi.RSSI(i));
+  //     if (WiFi.SSID(i) == currentSSID){
+  //       Serial.println("This current SSID");
+  //       Serial.println("Deauthen this SSID");
+  //       deauthDevice(WiFi.BSSID(i), WiFi.channel(i));
+  //     }
+  //   }
+  //   //delay(2000);
+  //   lastTickAuthen = millis();
+  // }
 
   Serial.println("");
 }

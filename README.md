@@ -33,10 +33,10 @@ The built-in LED will blink 5 times when a password is posted.
     <td>This is where the attacker can retrieve all the passwords that has been posted.</td>
     <td>Here the attacker can change the SSID name of the Access Point on the go.</td>
   <tr>
-    <td><img width="200px" src="https://raw.githubusercontent.com/BlueArduino20/ESP8266_WiFi_Captive_Portal/master/src/1_Index_2.jpg" title="index"></td>
-    <td><img width="200px" src="https://raw.githubusercontent.com/BlueArduino20/ESP8266_WiFi_Captive_Portal/master/src/2_Post.jpg" title="post"></td>
-    <td><img width="200px" src="https://raw.githubusercontent.com/BlueArduino20/ESP8266_WiFi_Captive_Portal/master/src/3_Pass.jpg" title="pass"></td>
-<td><img width="200px" src="https://raw.githubusercontent.com/BlueArduino20/ESP8266_WiFi_Captive_Portal/master/src/4_ssid.jpg" title="ssid"></td>
+    <td><img width="200px" src="https://raw.githubusercontent.com/trung501/ESP8266_WiFi_Captive_Portal/master/src/1_Index_2.jpg" title="index"></td>
+    <td><img width="200px" src="https://raw.githubusercontent.com/trung501/ESP8266_WiFi_Captive_Portal/master/src/2_Post.jpg" title="post"></td>
+    <td><img width="200px" src="https://raw.githubusercontent.com/trung501/ESP8266_WiFi_Captive_Portal/master/src/3_Pass.jpg" title="pass"></td>
+<td><img width="200px" src="https://raw.githubusercontent.com/trung501/ESP8266_WiFi_Captive_Portal/master/src/4_ssid.jpg" title="ssid"></td>
   </tr>
 </table>
 
@@ -52,11 +52,11 @@ Here you can donate if you liked my project and you want to support me:
 
 3. Open the ESP8266 Flasher and select the Node MCU port
 
-<img width="80%" src="https://raw.githubusercontent.com/BlueArduino20/ESP8266_WiFi_Captive_Portal_2.0/master/src/1_port_selection.PNG">
+<img width="80%" src="https://raw.githubusercontent.com/trung501/ESP8266_WiFi_Captive_Portal_2.0/master/src/1_port_selection.PNG">
 
 4. Then, go to the config tab and select the .bin file you've just downloaded.
 
-<img width="80%" src="https://raw.githubusercontent.com/BlueArduino20/ESP8266_WiFi_Captive_Portal_2.0/master/src/2_file_selection.png">
+<img width="80%" src="https://raw.githubusercontent.com/trung501/ESP8266_WiFi_Captive_Portal_2.0/master/src/2_file_selection.png">
 
 5. Finally, go back to the first tab and press "Flash"
 

